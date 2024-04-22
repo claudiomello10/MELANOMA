@@ -1,6 +1,3 @@
 /.venv
-/benign_tensor_test.pt
-/malignant_tensor_test.pt
-/train_benign_tensor.pt
-/train_malignant_tensor.pt
+/*.pt
 /__pycache__

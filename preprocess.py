@@ -118,15 +118,6 @@ del (
 # Print the shape of the benign training tensors
 print("Shape of benign tensor:", train_benign_tensor.shape)
 
-# add the labels to the tensor
-train_benign_labels = torch.zeros(len(train_benign_tensor))
-
-# Add the labels to the tensor in the last dimension
-train_benign_tensor = torch.cat(
-    (train_benign_tensor, train_benign_labels.unsqueeze(1)), dim=1
-)
-
-del train_benign_labels
 
 # Get all image file names in the directory for malignant
 train_malignant_files = [
@@ -212,34 +203,46 @@ del (
 # Print the shape of the malignant training tensors
 print("Shape of malignant tensor:", train_malignant_tensor.shape)
 
-# Add the labels to the tensor
-train_malignant_labels = torch.ones(len(train_malignant_tensor))
-
-# Add the labels to the tensor in the last dimension
-train_malignant_tensor = torch.cat(
-    (train_malignant_tensor, train_malignant_labels.unsqueeze(1)), dim=1
-)
-
-del train_malignant_labels
 
 # Concatenate the benign and malignant tensors
 print("Concatenating the benign and malignant tensors...")
 train_tensor = torch.cat((train_benign_tensor, train_malignant_tensor))
 
+# Shuffle the tensor and create labels
+print("Shuffling the tensor and creating labels...")
+train_labels = torch.cat(
+    (
+        torch.zeros(len(train_benign_tensor)),
+        torch.ones(len(train_malignant_tensor)),
+    )
+)
+
 del train_benign_tensor, train_malignant_tensor
 
-# Shuffle the tensor
-train_tensor = train_tensor[torch.randperm(train_tensor.size()[0])]
+# Shuffle the train_tensor along with its labels
+print("Shuffling the train tensor and labels...")
+indices = torch.randperm(len(train_tensor))
+train_tensor = train_tensor[indices]
+train_labels = train_labels[indices]
+
+del indices
+
+# Convert the tensor to float
+print("Converting the tensor to float...")
+train_tensor = train_tensor.float()
+train_labels = train_labels.float()
+
+# Permute the tensor
+print("Permuting the tensor...")
 train_tensor = train_tensor.permute(0, 3, 1, 2)
 
 
-# Print the shape of the training tensors
-print("Shape of training tensor:", train_tensor.shape)
-
-# Save the training tensor as a file
+# Save the training tensors as files
+print("Saving the training tensors...")
 torch.save(train_tensor, "train_tensor.pt")
+torch.save(train_labels, "train_labels.pt")
 
-del train_tensor
+del train_tensor, train_labels
 
 
 ########################### Test data preprocessing ###########################
@@ -305,37 +308,43 @@ test_malignant_tensor = torch.stack(test_malignant_tensors)
 print("Shape of test benign tensor:", test_benign_tensor.shape)
 print("Shape of test malignant tensor:", test_malignant_tensor.shape)
 
-# Add the labels to the test tensors
-test_benign_labels = torch.zeros(len(test_benign_tensor))
-test_malignant_labels = torch.ones(len(test_malignant_tensor))
-
-# Add the labels to the test tensors in the last dimension
-test_benign_tensor = torch.cat(
-    (test_benign_tensor, test_benign_labels.unsqueeze(1)), dim=1
-)
-
-del test_benign_labels
-
-test_malignant_tensor = torch.cat(
-    (test_malignant_tensor, test_malignant_labels.unsqueeze(1)), dim=1
-)
-
-del test_malignant_labels
 
 # Concatenate the test tensors
 print("Concatenating the test tensors...")
 test_tensor = torch.cat((test_benign_tensor, test_malignant_tensor))
 
+# Shuffle the test tensor and create labels
+print("Shuffling the test tensor and creating labels...")
+test_labels = torch.cat(
+    (
+        torch.zeros(len(test_benign_tensor)),
+        torch.ones(len(test_malignant_tensor)),
+    )
+)
+
+
 del test_benign_tensor, test_malignant_tensor
 
-# Shuffle the test tensor
-test_tensor = test_tensor[torch.randperm(test_tensor.size()[0])]
+# Shuffle the test_tensor along with its labels
+print("Shuffling the test tensor and labels...")
+indices = torch.randperm(len(test_tensor))
+test_tensor = test_tensor[indices]
+test_labels = test_labels[indices]
+
+del indices
+
+# Convert the tensor to float
+print("Converting the test tensor to float...")
+test_tensor = test_tensor.float()
+test_labels = test_labels.float()
+
+# Permute the tensor
+print("Permuting the test tensor...")
 test_tensor = test_tensor.permute(0, 3, 1, 2)
 
-# Print the shape of the test tensor
-print("Shape of test tensor:", test_tensor.shape)
-
-# Save the test tensor as a file
+# Save the test tensors as files
+print("Saving the test tensors...")
 torch.save(test_tensor, "test_tensor.pt")
+torch.save(test_labels, "test_labels.pt")
 
-del test_tensor
+del test_tensor, test_labels
