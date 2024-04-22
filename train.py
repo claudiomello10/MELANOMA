@@ -7,8 +7,8 @@ import torch.nn as nn
 
 
 # Load the .pt file as a tensor
-train_benign_tensor = torch.load("./train_benign_tensor.pt")
-train_malignant_tensor = torch.load("./train_malignant_tensor.pt")
+train_benign_tensor = torch.load("./benign_tensor_train.pt")
+train_malignant_tensor = torch.load("./malignant_tensor_train.pt")
 
 # Create labels for the data
 train_benign_labels = torch.zeros(len(train_benign_tensor))
@@ -36,13 +36,7 @@ tensor_dataset = torch.utils.data.TensorDataset(input_data, output_data)
 # Use the TensorDataset in the DataLoader
 train_loader = torch.utils.data.DataLoader(tensor_dataset, batch_size=32, shuffle=True)
 
-
-# Create a TensorDataset
-tensor_dataset = torch.utils.data.TensorDataset(input_data, output_data)
-
-# Use the TensorDataset in the DataLoader
-train_loader = torch.utils.data.DataLoader(tensor_dataset, batch_size=32, shuffle=True)
-
+# Create an instance of the CNN model
 model = CNN.CNN()
 
 # Define the loss function
