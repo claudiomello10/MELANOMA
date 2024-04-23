@@ -43,8 +43,22 @@ optimizer = torch.optim.Adam(model.parameters(), lr=LEARNING_RATE)
 
 print("Training the model...\n")
 epoch_losses = []
-for epoch in tqdm(range(NUM_EPOCHS), desc="Epochs"):
-    for data, label in tqdm(train_loader, desc="Batches", leave=False):
+
+GREEN = "\033[92m"
+RED = "\033[91m"
+RESET = "\033[0m"
+
+pbEpochs = tqdm(
+    range(NUM_EPOCHS),
+    desc=f"{GREEN}Epochs{RESET}",
+    colour="green",
+)
+
+for epoch in pbEpochs:
+    pbBatches = tqdm(
+        train_loader, desc=f"{RED}Batches{RESET}", leave=False, colour="red"
+    )
+    for data, label in pbBatches:
         # Move batch data to device (e.g. GPU)
         batch_data = data.to(device)
         batch_labels = label.to(device)
@@ -59,9 +73,10 @@ for epoch in tqdm(range(NUM_EPOCHS), desc="Epochs"):
         optimizer.zero_grad()
         loss.backward()
         optimizer.step()
+        pbBatches.set_postfix({"Batch loss": loss.item()})
 
     epoch_losses.append(loss.item())
-
+    pbEpochs.set_postfix({"Epoch loss": loss.item()})
 # Close the dataset
 custom_dataset.close()
 
