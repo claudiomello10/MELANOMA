@@ -4,66 +4,73 @@ import CNN
 import torch
 import pandas as pd
 import torch.nn as nn
+from batch_dataset import CustomDataset
+from torch.utils.data import DataLoader
+from tqdm import tqdm
+
+# Define the training parameters
+NUM_EPOCHS = 10
+LEARNING_RATE = 0.01
+BATCH_SIZE = 512
 
 
-# Load the .pt file as a tensor
-train_benign_tensor = torch.load("./benign_tensor_train.pt")
-train_malignant_tensor = torch.load("./malignant_tensor_train.pt")
-
-# Create labels for the data
-train_benign_labels = torch.zeros(len(train_benign_tensor))
-train_malignant_labels = torch.ones(len(train_malignant_tensor))
-
-# Concatenate the data and labels
-input_data = torch.cat((train_benign_tensor, train_malignant_tensor))
-output_data = torch.cat((train_benign_labels, train_malignant_labels))
-
-# Convert to float
-input_data = input_data.float()
-input_data = input_data.permute(0, 3, 1, 2)
-
-output_data = output_data.float()
+# Check if GPU is available
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+print(f"Using device: {device}")
 
 
-# Get the shape of the input data
-data_shape = input_data.shape
-print("Data shape:", data_shape)
+# Cria uma instância do conjunto de dados personalizado
+custom_dataset = CustomDataset("./melanoma.h5")
 
-
-# Create a TensorDataset
-tensor_dataset = torch.utils.data.TensorDataset(input_data, output_data)
-
-# Use the TensorDataset in the DataLoader
-train_loader = torch.utils.data.DataLoader(tensor_dataset, batch_size=32, shuffle=True)
+# Usa o conjunto de dados personalizado no DataLoader
+train_loader = DataLoader(custom_dataset, batch_size=BATCH_SIZE, shuffle=True)
 
 # Create an instance of the CNN model
 model = CNN.CNN()
+
+# Move the model to the device
+model.to(device)
+
 
 # Define the loss function
 criterion = nn.BCELoss()
 
 # Define the optimizer
-optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
-
-# Define the number of epochs
-num_epochs = 10
+optimizer = torch.optim.Adam(model.parameters(), lr=LEARNING_RATE)
 
 
 # Train the model
-for epoch in range(num_epochs):
-    model.train()
-    for i, (images, labels) in enumerate(train_loader):
+
+print("Training the model...\n")
+epoch_losses = []
+for epoch in tqdm(range(NUM_EPOCHS), desc="Epochs"):
+    for data, label in tqdm(train_loader, desc="Batches", leave=False):
+        # Move batch data to device (e.g. GPU)
+        batch_data = data.to(device)
+        batch_labels = label.to(device)
+
         # Forward pass
-        outputs = model(images)
-        loss = criterion(outputs, labels)
+        outputs = model(batch_data)
+
+        # Compute the loss
+        loss = criterion(outputs, batch_labels)
 
         # Backward pass and optimization
         optimizer.zero_grad()
         loss.backward()
         optimizer.step()
 
-        # Print the loss every 100 iterations
-        if (i + 1) % 100 == 0:
-            print(
-                f"Epoch [{epoch + 1}/{num_epochs}], Step [{i + 1}/{len(train_loader)}], Loss: {loss.item()}"
-            )
+    epoch_losses.append(loss.item())
+
+# Close the dataset
+custom_dataset.close()
+
+# Print the final loss
+print(f"\n\nFinal loss: {loss.item()}\n")
+
+# Save the losses to a CSV file
+loss_df = pd.DataFrame(epoch_losses, columns=["loss"])
+loss_df.to_csv("losses.csv", index=False)
+
+# Save the model
+torch.save(model.state_dict(), "model.pth")
