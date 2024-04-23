@@ -21,7 +21,7 @@ if __name__ == "__main__":
     # Define the training parameters
     NUM_EPOCHS = 10
     LEARNING_RATE = 0.01
-    BATCH_SIZE = 32
+    BATCH_SIZE = 2000
 
     # Check if GPU is available
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -36,7 +36,6 @@ if __name__ == "__main__":
         batch_size=BATCH_SIZE,
         num_workers=0,
         pin_memory=True,
-        shuffle=True,
     )
 
     if EXISTING_MODEL:
