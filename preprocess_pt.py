@@ -2,7 +2,12 @@ import os
 import cv2
 import tqdm
 import torch
+import h5py
 from torchvision import transforms
+
+
+FILE_FORMAT = "h5"  # 'pt' or 'h5'
+
 
 train_benign_directory = "./melanoma/train/Benign"
 train_malignant_directory = "./melanoma/train/Malignant"
@@ -238,9 +243,17 @@ train_tensor = train_tensor.permute(0, 3, 1, 2)
 
 
 # Save the training tensors as files
-print("Saving the training tensors...")
-torch.save(train_tensor, "train_tensor.pt")
-torch.save(train_labels, "train_labels.pt")
+print(f"Saving the training tensors as {FILE_FORMAT}...")
+if FILE_FORMAT == "pt":
+    torch.save(train_tensor, "train_tensor.pt")
+    torch.save(train_labels, "train_labels.pt")
+elif FILE_FORMAT == "h5":
+    with h5py.File("train_tensor.h5", "w") as f:
+        f.create_dataset("tensor", data=train_tensor)
+    with h5py.File("train_labels.h5", "w") as f:
+        f.create_dataset("labels", data=train_labels)
+else:
+    raise ValueError(f"Invalid file format: {FILE_FORMAT}")
 
 del train_tensor, train_labels
 
