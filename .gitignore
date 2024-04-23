@@ -2,3 +2,6 @@
 /*.pt
 /__pycache__
 /*.h5
+/*.csv
+/*.log
+/*.pth
