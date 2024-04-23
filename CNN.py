@@ -10,16 +10,16 @@ class CNN(nn.Module):
 
         # Define the layers
         self.conv1 = nn.Conv2d(
-            in_channels=3, out_channels=16, kernel_size=3, stride=1, padding=1
+            in_channels=3, out_channels=16, kernel_size=6, stride=2, padding=1
         )
         self.relu1 = nn.ReLU()
         self.pool1 = nn.MaxPool2d(kernel_size=2, stride=2)
         self.conv2 = nn.Conv2d(
-            in_channels=16, out_channels=32, kernel_size=3, stride=1, padding=1
+            in_channels=16, out_channels=32, kernel_size=6, stride=3, padding=1
         )
         self.relu2 = nn.ReLU()
         self.pool2 = nn.MaxPool2d(kernel_size=2, stride=2)
-        self.fc1 = nn.Linear(32 * 56 * 56, 1)  # Adjusted for input size 224x224
+        self.fc1 = nn.Linear(32 * 9 * 9, 1)  # 32 * 9 * 9 = 2592
         self.fc2 = nn.Sigmoid()
 
     def forward(self, x):
