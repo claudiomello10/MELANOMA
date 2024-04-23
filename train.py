@@ -13,10 +13,10 @@ if __name__ == "__main__":
 
     # Define the training mode
     torch.backends.cudnn.benchmark = True
-    EXISTING_MODEL = False
+    EXISTING_MODEL = True
     MODEL_PATH = "model.pth"
     HDF5_PATH = "./melanoma.h5"
-    CONCATENATE_EPOCH_LOSSES = False
+    CONCATENATE_EPOCH_LOSSES = True
 
     # Define the training parameters
     NUM_EPOCHS = 10
@@ -106,8 +106,13 @@ if __name__ == "__main__":
             os.remove("losses.csv")
         except FileNotFoundError:
             pass
-    loss_df = pd.DataFrame(epoch_losses, columns=["loss"])
-    loss_df.to_csv("losses.csv", index=False)
+    else:
+        try:
+            loss_df = pd.read_csv("losses.csv")
+            epoch_losses = list(loss_df["loss"]) + epoch_losses
+        except FileNotFoundError:
+            loss_df = pd.DataFrame(epoch_losses, columns=["loss"])
+            loss_df.to_csv("losses.csv", index=False)
 
     # Save the model
     torch.save(model.state_dict(), "model.pth")
