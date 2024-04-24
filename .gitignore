@@ -6,3 +6,5 @@
 /*.log
 /*.pth
 /data/*.pt
+/models/*.pth
+/data/training_losses/*.csv
