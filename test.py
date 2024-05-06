@@ -1,6 +1,6 @@
 import torch
-import h5py
 from CNN import CNN
+import os
 
 if torch.cuda.is_available():
     device = torch.device("cuda")
@@ -9,16 +9,24 @@ else:
     device = torch.device("cpu")
     print("GPU is not available")
 
+# Define directories
+DATA_DIRECTORY = "./data"
+MODELS_DIRECTORY = "./models"
+MODEL_NAME = "2024-04-24_12-54-36.pth"
+
+
 # Load the model
+
+model_state_dict = torch.load(f"{MODELS_DIRECTORY}/{MODEL_NAME}")
+
 model = CNN()
-model.load_state_dict(torch.load("model.pth"))
+model.load_state_dict(model_state_dict)
 model.to(device)
 
 
 # Load the test data
-h5_file = h5py.File("melanoma.h5", "r")
-test_data = torch.tensor(h5_file["test"][-10:]).to(device)
-test_labels = torch.tensor(h5_file["test_labels"][-10:]).to(device)
+test_data = torch.load(f"{DATA_DIRECTORY}/test_tensor.pt").to(device)
+test_labels = torch.load(f"{DATA_DIRECTORY}/test_labels.pt").to(device)
 
 # Set the model to evaluation mode
 model.eval()
